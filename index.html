@@ -199,7 +199,7 @@
         <textarea 
             class="input-textarea" 
             id="inputText" 
-            placeholder="Enter your message here (English)...&#10;&#10;Example: &#10;• Safety meeting at 2 PM in break room&#10;• Please check your pick rate before end of shift&#10;• Emergency stop button activated - wait for all clear"
+            placeholder="Enter your message here (English)..."
         ></textarea>
         
         <button class="translate-btn" onclick="translateText()" id="translateBtn">
@@ -257,12 +257,10 @@
             });
         }
 
-        // Update visible outputs when checkboxes change
         document.querySelectorAll('input[type="checkbox"]').forEach(cb => {
             cb.addEventListener('change', updateVisibleOutputs);
         });
 
-        // Initialize visible outputs
         updateVisibleOutputs();
 
         async function translateText() {
@@ -281,23 +279,18 @@
                 return;
             }
 
-            // Disable button and show loading
             const translateBtn = document.getElementById('translateBtn');
             translateBtn.disabled = true;
             translateBtn.innerHTML = '⏳ Translating...';
 
-            // Show loading in selected outputs
             selectedLanguages.forEach(lang => {
                 const outputElement = document.getElementById(lang + '-text');
                 outputElement.innerHTML = '<span class="loading">Translating...</span>';
             });
 
             try {
-                // Here's where you'd call your Lambda function
-                // For demo purposes, using placeholder
                 const response = await callLambdaTranslate(inputText, selectedLanguages);
                 
-                // Update outputs with results
                 selectedLanguages.forEach(lang => {
                     const outputElement = document.getElementById(lang + '-text');
                     outputElement.innerHTML = response[lang] || 'Translation error';
@@ -310,23 +303,13 @@
                     outputElement.innerHTML = 'Error: Could not translate. Please try again.';
                 });
             } finally {
-                // Re-enable button
                 translateBtn.disabled = false;
                 translateBtn.innerHTML = '🚀 Translate to Selected Languages';
             }
         }
 
         async function callLambdaTranslate(text, languages) {
-            // TODO: Replace with your actual Lambda API endpoint
-            // const response = await fetch('YOUR_LAMBDA_ENDPOINT', {
-            //     method: 'POST',
-            //     headers: { 'Content-Type': 'application/json' },
-            //     body: JSON.stringify({ text, languages })
-            // });
-            // return await response.json();
-
-            // Demo placeholder - remove when connecting to Lambda
-            await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate API delay
+            await new Promise(resolve => setTimeout(resolve, 2000));
             
             const demoTranslations = {
                 spanish: 'Reunión de seguridad a las 2 PM en la sala de descanso 🕐🛡️',
@@ -350,7 +333,6 @@
             try {
                 await navigator.clipboard.writeText(text);
                 
-                // Visual feedback
                 const copyBtn = element.parentNode.querySelector('.copy-btn');
                 const originalText = copyBtn.innerHTML;
                 copyBtn.innerHTML = '✅ Copied!';
@@ -367,7 +349,6 @@
             }
         }
 
-        // Auto-resize textarea
         document.getElementById('inputText').addEventListener('input', function() {
             this.style.height = 'auto';
             this.style.height = Math.max(120, this.scrollHeight) + 'px';
