@@ -158,6 +158,11 @@
             cursor: pointer;
             margin-left: 10px;
         }
+        
+        .error {
+            color: #dc3545;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
@@ -293,14 +298,18 @@
                 
                 selectedLanguages.forEach(lang => {
                     const outputElement = document.getElementById(lang + '-text');
-                    outputElement.innerHTML = response[lang] || 'Translation error';
+                    if (response[lang]) {
+                        outputElement.innerHTML = response[lang];
+                    } else {
+                        outputElement.innerHTML = '<span class="error">Translation not available</span>';
+                    }
                 });
 
             } catch (error) {
                 console.error('Translation error:', error);
                 selectedLanguages.forEach(lang => {
                     const outputElement = document.getElementById(lang + '-text');
-                    outputElement.innerHTML = 'Error: Could not translate. Please try again.';
+                    outputElement.innerHTML = '<span class="error">Error: Could not translate. Please try again.</span>';
                 });
             } finally {
                 translateBtn.disabled = false;
@@ -309,21 +318,35 @@
         }
 
         async function callLambdaTranslate(text, languages) {
-            await new Promise(resolve => setTimeout(resolve, 2000));
-            
-            const demoTranslations = {
-                spanish: 'Reunión de seguridad a las 2 PM en la sala de descanso 🕐🛡️',
-                french: 'Réunion de sécurité à 14h en salle de pause 🕐🛡️',
-                swahili: 'Mkutano wa usalama saa 2 PM katika chumba cha mapumziko 🕐🛡️',
-                kinyarwanda: 'Inama y\'umutekano saa 2 PM mu cyumba cyo kuruhukira 🕐🛡️'
-            };
-            
-            const result = {};
-            languages.forEach(lang => {
-                result[lang] = demoTranslations[lang] || 'Translation not available';
-            });
-            
-            return result;
+            try {
+                const response = await fetch('https://bo42er5366.execute-api.us-east-2.amazonaws.com/default/translation-word-filter-new', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        message: text,
+                        languages: languages
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                // Handle error responses from the API
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+                
+                return data;
+                
+            } catch (error) {
+                console.error('API call failed:', error);
+                throw error;
+            }
         }
 
         async function copyToClipboard(elementId) {
